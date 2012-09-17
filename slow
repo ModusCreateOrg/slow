@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# slow
+#
+# Simulates a low bandwidth, high-latency network connection
+#
+# Requires a Linux operating system equipped with the 'tc' traffic control tool
+#
+
+BANDWIDTH=100kbps
+LATENCY=350ms
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+. /lib/lsb/init-functions
+
+case $1 in
+        start)
+		# Credit to Superuser for the basic commands that run this 
+		# Question: http://superuser.com/questions/147156/simulating-a-low-bandwidth-high-latency-network-connection-on-linux
+		# Author: Justin L. http://superuser.com/users/38740/justin-l
+		# Answer: http://superuser.com/a/147434/159810
+                tc qdisc add dev eth0 root handle 1: htb default 12  &&
+		tc class add dev eth0 parent 1:1 classid 1:12 htb rate $BANDWIDTH ceil $BANDWIDTH  &&
+		tc qdisc add dev eth0 parent 1:12 netem delay $LATENCY
+                status=$?
+                log_end_msg $status
+                ;;
+        stop)
+                tc qdisc del dev eth0 root
+                log_end_msg $?
+                ;;
+        restart|force-reload)
+                $0 stop && sleep 1 && $0 start
+                ;;
+        try-restart)
+                if $0 status >/dev/null; then
+                        $0 restart
+                else
+                        exit 0
+                fi
+                ;;
+        reload)
+                exit 3
+                ;;
+        status)
+                tc qdisc
+                ;;
+        *)
+                echo "Usage: $0 {start|stop|restart|try-restart|force-reload|status}"
+                exit 2
+                ;;
+esac
