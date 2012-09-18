@@ -195,7 +195,6 @@ do
          ;;
        clear|reset)
          command=clear
-         break
          ;;
        status)
          command=status
