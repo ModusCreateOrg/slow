@@ -74,7 +74,7 @@ do
       ;;
     -d | --device)
       shift
-      DEVICE=$1
+      device=$1
       ;;
     -b | --bandwidth)
       shift
