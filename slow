@@ -299,7 +299,7 @@ case $command in
     retcode=$?
     ;;
   clear)
-    echo resetting queueing discipline
+    echo "Resetting queueing discipline"
     tc qdisc del dev $device root
     retcode=$?
     ;;
