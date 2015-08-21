@@ -30,13 +30,18 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-VERSION=0.1
+# Use bash unofficial strict mode http://redsymbol.net/articles/unofficial-bash-strict-mode/
+set -euo pipefail
+IFS=$'\n\t'
+
+VERSION=0.2
 device=eth0
 bandwidth=100kbps
-latency=350ms
-packetloss=
-command=slow
-retcode=0
+latency=""
+packetloss=""
+corruption=""
+command=help
+quiet=false
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 if ! which tc > /dev/null; then
@@ -45,7 +50,7 @@ if ! which tc > /dev/null; then
   exit 1
 fi
 
-if [ $EUID -ne 0 ]; then
+if [ "$EUID" -ne 0 ]; then
   echo "Aborting: you must run this as root."
   exit 2
 fi
@@ -74,19 +79,31 @@ do
       ;;
     -d | --device)
       shift
-      DEVICE=$1
+      device="$1"
+      command=slow
       ;;
     -b | --bandwidth)
       shift
       bandwidth=$1
+      command=slow
       ;;
     -l | --latency)
       shift
-      latency=$1
+      latency="$1"
+      command=slow
       ;;
     -p | --packetloss)
       shift
-      packetloss=$1
+      packetloss="$1"
+      command=slow
+      ;;
+    -c | --corruption)
+      shift
+      corruption="$1"
+      command=slow
+      ;;
+    -q | --quiet)
+      quiet=true
       ;;
   # ...
 
@@ -207,6 +224,31 @@ do
          bandwidth=5mbps
          latency=500ms
          ;;
+       eth-10)
+         command=slow
+         bandwidth=10mbps
+         latency=5ms
+         ;;
+       eth-100)
+         command=slow
+         bandwidth=100mbps
+         latency=2ms
+         ;;
+       eth-1000)
+         command=slow
+         bandwidth=1000mbps
+         latency=0.5ms
+         ;;
+       vsat)
+         command=slow
+         bandwidth=5mbps
+         latency=500ms
+         ;;
+       vsat)
+         command=slow
+         bandwidth=5mbps
+         latency=500ms
+         ;;
        clear|reset)
          command=clear
          ;;
@@ -232,18 +274,20 @@ do
   esac
 
   # for testing purposes:
-  echo "param $1"
+  #echo "param $1"
 
   shift
 done
 
-echo "command=$command"
-echo "bandwidth=$bandwidth"
-echo "latency=$latency"
+if ! $quiet && [[ "$command" == slow ]]; then
+  echo "command=$command"
+  echo "bandwidth=$bandwidth"
+  echo "latency=$latency"
+fi
 
 case $command in
   help)
-    echo $0
+    echo "$0"
     echo 'Usage: slow <network-type> [-d device] [-b bandwidth] [-l latency] [-p drop]'
     echo '       slow reset'
     echo '       slow status'
@@ -274,39 +318,43 @@ case $command in
     echo '  eth-100'
     echo '  eth-1000'
     echo '  vsat'
-    echo '  vsat-busy'
     ;;
   version)
     # version info
     echo "slow version $VERSION"
-    echo "Copyright (c) 2012 Modus Create"
+    echo "Copyright (c) 2012-2015 Modus Create"
     ;;
   slow)
     # Credit to Superuser for the basic commands that run this 
     # Question: http://superuser.com/questions/147156/simulating-a-low-bandwidth-high-latency-network-connection-on-linux
     # Author: Justin L. http://superuser.com/users/38740/justin-l
     # Answer: http://superuser.com/a/147434/159810
-    if  tc qdisc show dev $device | grep "qdisc htb 1: root" >/dev/null; then
+    if  tc qdisc show dev "$device" | grep "qdisc htb 1: root" >/dev/null; then
       verb=change
       echo "Changing existing queuing discipline"
     else
       verb=add
       echo "Adding new queuing discipline"
-      tc qdisc $verb dev $device root handle 1: htb default 12
+      tc qdisc "$verb" dev "$device" root handle 1: htb default 12
     fi
-    tc class $verb dev $device parent 1:1 classid 1:12 htb rate $bandwidth ceil $bandwidth  &&
-    tc qdisc $verb dev $device parent 1:12 netem delay $latency
-    retcode=$?
+    tc class "$verb" dev "$device" parent 1:1 classid 1:12 htb rate "$bandwidth" ceil "$bandwidth"
+    if [[ ! -z "$latency" ]]; then 
+        tc qdisc "$verb" dev "$device" parent 1:12 netem latency $latency
+    fi
+    if [[ ! -z "$packetloss" ]]; then 
+        tc qdisc "$verb" dev "$device" parent 1:12 netem loss $packetloss
+    fi
+    if [[ ! -z "$corruption" ]]; then 
+        tc qdisc "$verb" dev "$device" parent 1:12 netem corrupt $corruption
+    fi
     ;;
   clear)
     echo resetting queueing discipline
-    tc qdisc del dev $device root
-    retcode=$?
+    tc qdisc del dev "$device" root
     ;;
   status)
-    tc qdisc
-    retcode=$?
+    tc class show dev "$device"
+    tc qdisc show dev "$device"
     ;;
 esac
 
-exit $retcode
