@@ -15,13 +15,13 @@ Slow requires Linux and the 'tc' suite of traffic control tools.
 
 Credits
 =======
-Richard Bullington-McGuire <richard@moduscreate.com> wrote the script inspired by a UI suggestion from Mike Schwartz <mike@moduscreate.com>.
+Richard Bullington-McGuire <richard@moduscreate.com> wrote the script inspired by a UI suggestion from Mike Schwartz <mike@moduscreate.com>. [Tyler Knappe](https://github.com/knappe) and [Adrian Silva](https://github.com/skiold) helped clean up the script.
 
 Stack Overflow and Superuser questions that helped:
 * http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
 * http://superuser.com/questions/147156/simulating-a-low-bandwidth-high-latency-network-connection-on-linux
 
-An [Aptivate blog post](http://blog.aptivate.org/2010/01/23/make-sure-your-apps-work-in-the-field/) lent some inspiration, as did [this script](http://atmail.com/kb/2009/throttling-bandwidth/) for throttling bandwidth. 
+An [Aptivate blog post](https://web.archive.org/web/20111129155657/http://blog.aptivate.org/2010/01/23/make-sure-your-apps-work-in-the-field) lent some inspiration, as did [this script](https://web.archive.org/web/20130928002236/http://atmail.com/kb/2009/throttling-bandwidth) for throttling bandwidth.
 
 Future Development
 ==================
