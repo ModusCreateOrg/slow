@@ -62,6 +62,18 @@ Parameter          |  Description
 -c / --corruption |  Corrupt random bits, in percent, e.g. "0.01%"
 -q / --quiet      |  Make output quiet
 
+Testing
+=======
+This project is set up with [Vagrant](http://www.vagrantup.com/) to make it convenient
+to test, even if you are not running Linux as your host operating system. 
+
+Install Vagrant and [Virtualbox](http://www.virtualbox.org/) and issue the command `vagrant up` and then you can experiment with the different commands, for example:
+
+    vagrant up
+    vagrant ssh 
+    # wait for vagrant prompt 
+    sudo /vagrant/slow 56k
+
 Credits
 =======
 Richard Bullington-McGuire <richard@moduscreate.com> wrote the script inspired by a UI suggestion from Mike Schwartz <mike@moduscreate.com>. [Tyler Knappe](https://github.com/knappe) and [Adrian Silva](https://github.com/skiold) helped clean up the script.
