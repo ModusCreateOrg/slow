@@ -16,6 +16,8 @@ If you assign more than one network interface to a virtual guest, you could run 
 
 Slow requires Linux and the 'tc' suite of traffic control tools.
 
+See the [Cisco Global Cloud Index Supplement](http://www.cisco.com/c/en/us/solutions/collateral/service-provider/global-cloud-index-gci/CloudIndex_Supplement.html) for statistics on bandwidth and latency for countries all over the world.
+
 Usage
 =====
 
