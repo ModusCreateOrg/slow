@@ -41,7 +41,7 @@ current_used_device() {
   echo $device
 }
 
-VERSION=0.3
+VERSION=0.4
 device=$(current_used_device)
 bandwidth=100kbps
 latency=350ms
@@ -269,13 +269,13 @@ do
 done
 
 echo "command=$command"
-echo "device=$device"
-echo "bandwidth=$bandwidth"
-echo "latency=$latency"
-echo "packetloss=$packetloss"
-echo "duplication=$duplication"
-echo "corruption=$corruption"
-echo "reordering=$reordering"
+echo "-d device=$device"
+echo "-b bandwidth=$bandwidth"
+echo "-l latency=$latency"
+echo "-p packetloss=$packetloss"
+echo "-u duplication=$duplication"
+echo "-c corruption=$corruption"
+echo "-r reordering=$reordering"
 
 
 case $command in
