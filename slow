@@ -31,8 +31,9 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # Version Change
 # 0.1 first version
-# 0.2 implementation packet loss by aloysius
-# 0.3 device chosen is currently active
+# 0.2 @aloysius implements packet loss
+# 0.3 @sunapi386 implements the active device selected by default
+# 0.4 @sunapi386 implements packet duplication, corruption, reordering
 
 current_used_device() {
   gateway=$(traceroute -m 1 google.com | tail -n 1 | cut -d' ' -f4)
@@ -45,6 +46,9 @@ device=$(current_used_device)
 bandwidth=100kbps
 latency=350ms
 packetloss=0%
+duplication=0%
+corruption=0%
+reordering=0%
 command=slow
 retcode=0
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
@@ -103,6 +107,18 @@ do
       shift
       packetloss=$1
       ;;
+    -u | --duplication)
+      shift
+      duplication=$1
+      ;;
+    -c | --corruption)
+      shift
+      corruption=$1
+      ;;
+    -r | --reordering)
+      shift
+      reordering=$1
+      ;;
   # ...
 
   # Special cases
@@ -115,7 +131,7 @@ do
     -?)
       # error unknown (short) option $1
       ;;
-   # 
+   #
    # Shortcuts
        AMPS|amps)
          command=slow
@@ -211,7 +227,7 @@ do
          command=slow
          bandwidth=11mbps
          latency=10ms
-         ;; 
+         ;;
        wifi-n)
          command=slow
          bandwidth=110mbps
@@ -257,11 +273,15 @@ echo "device=$device"
 echo "bandwidth=$bandwidth"
 echo "latency=$latency"
 echo "packetloss=$packetloss"
+echo "duplication=$duplication"
+echo "corruption=$corruption"
+echo "reordering=$reordering"
+
 
 case $command in
   help)
     echo $0
-    echo 'Usage: slow <network-type> [-d device] [-b bandwidth] [-l latency] [-p drop]'
+    echo 'Usage: slow <network-type> [-d device] [-b bandwidth] [-l latency] [-p %drop] [-u %duplication] [-c %corruption] [-r %reordering]'
     echo '       slow reset'
     echo '       slow status'
     echo
@@ -299,7 +319,7 @@ case $command in
     echo "Copyright (c) 2012 Modus Create"
     ;;
   slow)
-    # Credit to Superuser for the basic commands that run this 
+    # Credit to Superuser for the basic commands that run this
     # Question: http://superuser.com/questions/147156/simulating-a-low-bandwidth-high-latency-network-connection-on-linux
     # Author: Justin L. http://superuser.com/users/38740/justin-l
     # Answer: http://superuser.com/a/147434/159810
@@ -315,7 +335,7 @@ case $command in
       modprobe sch_netem
     fi
     echorun tc class $verb dev $device parent 1:1 classid 1:12 htb rate $bandwidth ceil $bandwidth  &&
-    echorun tc qdisc $verb dev $device parent 1:12 netem delay $latency loss $packetloss
+    echorun tc qdisc $verb dev $device parent 1:12 netem delay $latency loss $packetloss duplicate $duplication corrupt $corruption reorder $reordering
     retcode=$?
     ;;
   clear)
