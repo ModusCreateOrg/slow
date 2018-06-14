@@ -34,6 +34,8 @@
 # 0.2 @aloysius implements packet loss
 # 0.3 @sunapi386 implements the active device selected by default
 # 0.4 @sunapi386 implements packet duplication, corruption, reordering
+# 0.5 @sunapi386 implements reset after timeout; to recover device without a reboot
+VERSION=0.5
 
 current_used_device() {
   gateway=$(traceroute -m 1 google.com | tail -n 1 | cut -d' ' -f4)
@@ -41,7 +43,6 @@ current_used_device() {
   echo $device
 }
 
-VERSION=0.4
 device=$(current_used_device)
 bandwidth=100kbps
 latency=350ms
@@ -49,6 +50,7 @@ packetloss=0%
 duplication=0%
 corruption=0%
 reordering=0%
+self_reset_delay_s=0
 command=slow
 retcode=0
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
@@ -118,6 +120,10 @@ do
     -r | --reordering)
       shift
       reordering=$1
+      ;;
+    -s | --self_reset_delay_s)
+      shift
+      self_reset_delay_s=$1
       ;;
   # ...
 
@@ -276,12 +282,12 @@ echo "-p packetloss=$packetloss"
 echo "-u duplication=$duplication"
 echo "-c corruption=$corruption"
 echo "-r reordering=$reordering"
-
+echo "-s self_reset_delay_s=$self_reset_delay_s"
 
 case $command in
   help)
     echo $0
-    echo 'Usage: slow <network-type> [-d device] [-b bandwidth] [-l latency] [-p %drop] [-u %duplication] [-c %corruption] [-r %reordering]'
+    echo 'Usage: slow <network-type> [-d device] [-b bandwidth] [-l latency] [-p %drop] [-u %duplication] [-c %corruption] [-r %reordering] [-s self_reset_delay_s]'
     echo '       slow reset'
     echo '       slow status'
     echo
@@ -336,6 +342,12 @@ case $command in
     fi
     echorun tc class $verb dev $device parent 1:1 classid 1:12 htb rate $bandwidth ceil $bandwidth  &&
     echorun tc qdisc $verb dev $device parent 1:12 netem delay $latency loss $packetloss duplicate $duplication corrupt $corruption reorder $reordering
+    if [ ${self_reset_delay_s} -ne 0 ]; then
+        echo "Resetting after ${self_reset_delay_s}s of slow"
+        sleep ${self_reset_delay_s}
+        echo resetting queueing discipline
+        echorun tc qdisc del dev ${device} root
+    fi
     retcode=$?
     ;;
   clear)
