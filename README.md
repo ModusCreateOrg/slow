@@ -27,13 +27,13 @@ Use the `-s` to  to trigger `slow reset` automatically after the timeout. Useful
 
 Credits
 =======
-v0.5 @sunapi386 implements reset after timeout; to recover device without a reboot
-v0.4 @sunapi386 implements packet duplication, corruption, reordering
-v0.3 @sunapi386 implements the active device selected by default
-v0.2 @aloysius implements packet loss
-v0.1 first version
+* v0.5 @sunapi386 implements reset after timeout; to recover device without a reboot
+* v0.4 @sunapi386 implements packet duplication, corruption, reordering
+* v0.3 @sunapi386 implements the active device selected by default
+* v0.2 @aloysius implements packet loss
+* v0.1 first version
 
-- Richard Bullington-McGuire <richard@moduscreate.com> wrote the script inspired by a UI suggestion from Mike Schwartz <mike@moduscreate.com>.
+Richard Bullington-McGuire <richard@moduscreate.com> wrote the script inspired by a UI suggestion from Mike Schwartz <mike@moduscreate.com>.
 
 Stack Overflow and Superuser questions that helped:
 * http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
